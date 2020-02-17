@@ -52,29 +52,49 @@ pub fn init() -> Result<(), JsValue> {
     canvas.set_height(W);
     canvas.set_width(W);
     body.append_child(&canvas)?;
+    log("1.2");
     Ok(())
 }
 
 const R: f64 = std::f64::consts::PI * 2.0 / N as f64;
 static FRAME_COUNT: AtomicUsize = AtomicUsize::new(0);
-static mut x: f64 = 0.0;
-static mut y: f64 = 0.0;
+static mut X: f64 = 0.0;
+static mut Y: f64 = 0.0;
 #[wasm_bindgen]
-pub fn draw(ctx: &web_sys::CanvasRenderingContext2d) {
+pub fn draw(ctx: &web_sys::CanvasRenderingContext2d) -> Result<(), JsValue> {
     let count = FRAME_COUNT.fetch_add(1, Ordering::SeqCst);
     let t: f64 = count as f64 / 10.0;
-    ctx.clear_rect(0.0, 0.0, W as f64, W as f64);
+    let image_data = ctx.create_image_data_with_sw_and_sh(W as f64, W as f64)?;
+    let mut data = image_data.data();
     for i in 0..N {
         for j in 0..N {
             let ii = i as f64;
-            ctx.set_fill_style(&JsValue::from_str(&format!("rgb({},{},{})",i,j,255)));
             unsafe {
-                let u = (ii + y).sin() + (R * ii + x).sin();
-                let v = (ii + y).cos() + (R * ii + x).cos();
-                x = u + t;
-                y = v;
-                ctx.fill_rect(u * (N/2) as f64 + (W/2) as f64, y * (N/2) as f64 + (W/2) as f64, 2.0, 2.0);
+                let u = (ii + Y).sin() + (R * ii + X).sin();
+                let v = (ii + Y).cos() + (R * ii + X).cos();
+                X = u + t;
+                Y = v;
+                put_dot(&mut data
+                    , u * (N/2) as f64 + (W/2) as f64
+                    , Y * (N/2) as f64 + (W/2) as f64
+                    , 0 as u8
+                    , 0 as u8
+                    , 255
+                    , 255
+                );
             }
         }
     }
+    ctx.put_image_data(&image_data, 0.0, 0.0)?;
+
+    Ok(())
+}
+
+fn put_dot(data: &mut wasm_bindgen::Clamped<std::vec::Vec<u8>>, x: f64, y: f64, r: u8, g: u8, b: u8, a: u8) {
+    let base: usize = ((y * W as f64 + x) * 4.0) as usize;
+    //log(&format!("{}, {:?}, {:?}, {:?}", base, r, g, b));
+    data[base    ] = r;
+    data[base + 1] = g;
+    data[base + 2] = b;
+    data[base + 3] = a;
 }

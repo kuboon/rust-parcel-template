@@ -36,6 +36,7 @@ features = [
   'Element',
   'HtmlElement',
   'HtmlCanvasElement',
+  'ImageData',
   'Node',
   'Window',
 ]
