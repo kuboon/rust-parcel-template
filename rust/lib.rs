@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate cfg_if;
-
 extern crate wasm_bindgen;
 extern crate web_sys;
 use wasm_bindgen::prelude::*;
@@ -37,8 +36,8 @@ extern "C" {
     #[wasm_bindgen(js_namespace = console)]
     fn log(s: &str);
 }
-const W: u32 = 540;
-const N: u32 = 100;
+const W: u32 = 600;
+const N: u32 = 260;
 #[wasm_bindgen]
 pub fn init() -> Result<(), JsValue> {
     set_panic_hook();
@@ -52,7 +51,7 @@ pub fn init() -> Result<(), JsValue> {
     canvas.set_height(W);
     canvas.set_width(W);
     body.append_child(&canvas)?;
-    log("1.2");
+    log("33");
     Ok(())
 }
 
@@ -61,11 +60,11 @@ static FRAME_COUNT: AtomicUsize = AtomicUsize::new(0);
 static mut X: f64 = 0.0;
 static mut Y: f64 = 0.0;
 #[wasm_bindgen]
-pub fn draw(ctx: &web_sys::CanvasRenderingContext2d) -> Result<(), JsValue> {
+pub fn draw(ctx: &web_sys::CanvasRenderingContext2d) -> Result<web_sys::ImageData, JsValue> {
     let count = FRAME_COUNT.fetch_add(1, Ordering::SeqCst);
-    let t: f64 = count as f64 / 10.0;
-    let image_data = ctx.create_image_data_with_sw_and_sh(W as f64, W as f64)?;
-    let mut data = image_data.data();
+    let t: f64 = count as f64 / 300.0;
+    let mut bitmap: Vec<u8> = vec![0; (W * W * 4) as usize];
+    let mut data = &mut bitmap;
     for i in 0..N {
         for j in 0..N {
             let ii = i as f64;
@@ -75,24 +74,26 @@ pub fn draw(ctx: &web_sys::CanvasRenderingContext2d) -> Result<(), JsValue> {
                 X = u + t;
                 Y = v;
                 put_dot(&mut data
-                    , u * (N/2) as f64 + (W/2) as f64
-                    , Y * (N/2) as f64 + (W/2) as f64
-                    , 0 as u8
-                    , 0 as u8
-                    , 255
+                    , ((u * (N/2) as f64) as i32 + (W/2) as i32) as u32
+                    , ((v * (N/2) as f64) as i32 + (W/2) as i32) as u32
+                    , i as u8
+                    , j as u8
+                    , 100
                     , 255
                 );
             }
         }
     }
+    let image_data = web_sys::ImageData::new_with_u8_clamped_array_and_sh(
+        wasm_bindgen::Clamped(&mut data[..]),
+        W, W
+    )?;
     ctx.put_image_data(&image_data, 0.0, 0.0)?;
-
-    Ok(())
+    Ok(image_data)
 }
 
-fn put_dot(data: &mut wasm_bindgen::Clamped<std::vec::Vec<u8>>, x: f64, y: f64, r: u8, g: u8, b: u8, a: u8) {
-    let base: usize = ((y * W as f64 + x) * 4.0) as usize;
-    //log(&format!("{}, {:?}, {:?}, {:?}", base, r, g, b));
+fn put_dot(data: &mut std::vec::Vec<u8>, x: u32, y: u32, r: u8, g: u8, b: u8, a: u8) {
+    let base: usize = ((y * W + x) * 4) as usize;
     data[base    ] = r;
     data[base + 1] = g;
     data[base + 2] = b;
