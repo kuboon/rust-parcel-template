@@ -2,15 +2,28 @@
 <html>
   <head>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
-    <title>My awesome Rust, WebAssembly, and Parcel application</title>
+    <meta name="twitter:card" content="player" />
+    <meta name="twitter:site" content="@kuboon" />
+    <meta name="twitter:title" content="Rust x Parcel" />
+    <meta name="twitter:description" content="inspired by twitter.com/yuruyurau" />
+    <meta name="twitter:image" content="https://kuboon.github.io/tenarai-rust-1/eye-catch.png" />
+    <meta name="twitter:player" content="https://kuboon.github.io/tenarai-rust-1/" />
+    <meta name="twitter:player:width" content="480" />
+    <meta name="twitter:player:height" content="480" />
+    <title>Rust x Parcel</title>
     <script defer src="js/index.js"></script>
     <style>
-    canvas {background: black;}
+    body {background: black;}
+    p, a { color: white; position: absolute;}
+    canvas {
+      width:100%;
+      max-width:600px;
+      height:auto;
+    }
     </style>
   </head>
   <body>
   <p>inspired by <a href="https://twitter.com/yuruyurau/status/1226846058728177665">@yuruyurau</a><br />
   ported to rust wasm</p>
-
   </body>
 </html>
