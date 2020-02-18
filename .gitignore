@@ -1,9 +1,0 @@
-dist
-node_modules
-pkg/
-target/
-wasm-pack.log
-.cache/
-
-.now
-.netlify
